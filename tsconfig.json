@@ -14,5 +14,20 @@
           "sse-writer": ["types/sse-writer.d.ts"],
           "node-outlook": ["types/node-outlook.d.ts"]
         }
-    }
+    },
+    "files": [
+        "bot.ts",
+        "lib/calendar.ts",
+        "lib/opalbot.ts",
+        "lib/util.ts",
+        "lib/wit.ts",
+        "multibot/basebot.ts",
+        "multibot/fbbot.ts",
+        "multibot/index.ts",
+        "multibot/slackbot.ts",
+        "multibot/termbot.ts",
+        "multical/caldav.ts",
+        "types/ical.js.d.ts",
+        "types/messenger-bot.d.ts"
+    ]
 }
