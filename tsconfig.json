@@ -29,6 +29,7 @@
         "multibot/slackbot.ts",
         "multibot/termbot.ts",
         "multibot/webbot.ts",
+        "multical/calbase.ts",
         "multical/caldav.ts",
         "multical/icsutil.ts",
         "multical/office.ts",
