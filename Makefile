@@ -1,3 +1,6 @@
+build/bot.js: tsconfig.json $(shell python -c "import json; print(' '.join(json.loads(' '.join(filter(lambda x: '//' not in x, open('tsconfig.json'))))['files']))")
+	node node_modules/opal-transformer/build/main.js tsconfig.json
+
 .PHONY: build
 build:
 	yarn
@@ -6,7 +9,7 @@ build:
 
 # Run the bot with environment variables from `.env` and arguments from $ARGS.
 .PHONY: run
-run:
+run: build/bot.js
 	export $$(cat .env | xargs) && \
 		node build/bot.js $(ARGS)
 
