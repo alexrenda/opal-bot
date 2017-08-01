@@ -1,6 +1,7 @@
 import { Wit } from 'node-wit';
 import * as Loki from 'lokijs';
 import * as minimist from 'minimist';
+import * as opal from 'opal';
 
 import { OpalBot } from './lib/opalbot';
 
@@ -20,7 +21,7 @@ function openDB(filename: string): Promise<Loki> {
 /**
  * Run the bot.
  */
-async function main() {
+async function main(ctx: opal.Context) {
   // Set up the service-agnostic infrastructure.
   let wit_token = process.env['WIT_ACCESS_TOKEN'];
   if (!wit_token) {
@@ -82,4 +83,4 @@ async function main() {
   }
 }
 
-main();
+opal.opal(main);
