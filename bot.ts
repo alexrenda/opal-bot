@@ -83,4 +83,10 @@ async function main(ctx: opal.Context) {
   }
 }
 
-opal.opal(main);
+/**
+ * Opal requires that we have a local OpalNode to perform any remote
+ * operations, even if we don't support any endpoints.
+ */
+class OpalBotNode extends opal.OpalNode {}
+
+opal.opal(main, new OpalBotNode('localhost', 7777));
