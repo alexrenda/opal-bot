@@ -33,6 +33,7 @@
         "multical/caldav.ts",
         "multical/icsutil.ts",
         "multical/office.ts",
+        "multical/remote.ts",
         "types/ical.js.d.ts",
         "types/messenger-bot.d.ts",
         "types/sse-writer.d.ts"
