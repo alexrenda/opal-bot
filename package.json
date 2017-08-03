@@ -6,6 +6,8 @@
   "private": true,
   "dependencies": {
     "@slack/client": "^3.10.0",
+    "@types/argparse": "^1.0.30",
+    "argparse": "^1.0.9",
     "ical.js": "^1.2.2",
     "jsonwebtoken": "^7.4.1",
     "lokijs": "^1.4.3",
