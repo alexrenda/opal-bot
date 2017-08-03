@@ -29,6 +29,25 @@
         </p>
     </form>
 
+    <h3>Remote</h3>
+    <form action="" method="POST">
+        <input type="hidden" name="service" value="remote">
+
+        <p>
+            <label for="hostname">Hostname</label>
+            <input type="text" name="hostname">
+        </p>
+
+        <p>
+            <label for="username">Port</label>
+            <input type="number" name="port">
+        </p>
+
+        <p>
+            <input type="submit" value="Connect">
+        </p>
+    </form>
+
     {% if officeAuthURL %}
     <h3>Office 365</h3>
     <p>

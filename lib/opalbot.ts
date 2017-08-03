@@ -17,6 +17,7 @@ import fetch from 'node-fetch';
 import { findURL, gitSummary, IVars, randomString } from './util';
 import * as caldav from '../multical/caldav';
 import * as office from '../multical/office';
+import * as remote from '../multical/remote';
 import { Calendar } from '../multical/calbase';
 import * as moment from 'moment';
 import * as nunjucks from 'nunjucks';
@@ -33,13 +34,17 @@ interface User {
  * Settings that users can configure in the web interface.
  */
 interface Settings {
-  service?: 'caldav' | 'office';
+  service?: 'caldav' | 'office' | 'remote';
   caldav?: {
     url: string;
     username: string;
     password: string;
   };
   officeToken?: office.Token;
+  remote?: {
+    hostname: string;
+    port: number;
+  };
 }
 
 /**
@@ -137,6 +142,16 @@ export class OpalBot {
           };
           this.webSessions.put(token, settings);
           res.end('got it; thanks!');
+        } else if (data['service'] === 'remote') {
+          let settings: Settings = {
+            service: 'remote',
+            remote: {
+              hostname: data['hostname'],
+              port: data['port'],
+            },
+          };
+          this.webSessions.put(token, settings);
+          res.end('got it; thanks!');
         } else {
           res.end('sorry; I did not understand the form');
         }
@@ -209,7 +224,7 @@ export class OpalBot {
   }
 
   /**
-   * Add support for getting calendars via the Office 365 API. 
+   * Add support for getting calendars via the Office 365 API.
    */
   addOffice(id: string, secret: string) {
     let client = new office.Client(id, secret, this.webURL);
@@ -266,7 +281,7 @@ export class OpalBot {
       this.users.update(user);
       this.db.saveDatabase();
     }
-    
+
     // Get the calendar from the appropriate service.
     if (user.settings.service === 'caldav') {
       let cd = user.settings.caldav!;
@@ -274,6 +289,9 @@ export class OpalBot {
     } else if (user.settings.service === 'office') {
       let token = user.settings.officeToken!;
       return new office.Calendar(token);
+    } else if (user.settings.service === 'remote') {
+      let rem = user.settings.remote!;
+      return new remote.Calendar(rem.hostname, rem.port);
     }
 
     return null;
