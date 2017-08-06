@@ -4,4 +4,4 @@
 	branch = distributed
 [submodule "opal-transformer"]
 	path = opal-transformer
-	url = 9a8d859c69964091e3080af8becccebc7d88e0af@github.com:alexrenda/opal-transformer.git
+	url = 080d7a77d73fe34e4aa2f39f5842cd196ef802a2@github.com:alexrenda/opal-transformer.git
