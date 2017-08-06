@@ -1,0 +1,7 @@
+[submodule "opal-transformer"]
+	path = opal-transformer
+	url = git@github.com:alexrenda/opal-transformer.git
+[submodule "opal"]
+	path = opal
+	url = git@github.com:sampsyo/opal.git
+	branch = glopal
