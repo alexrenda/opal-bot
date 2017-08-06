@@ -39,6 +39,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "postinstall": make,
     "build-web": "tsc -p web"
   }
 }

@@ -89,4 +89,4 @@ async function main(ctx: opal.Context) {
  */
 class OpalBotNode extends opal.OpalNode {}
 
-opal.opal(main, new OpalBotNode('localhost', 7777));
+opal.opal(main, new OpalBotNode('localhost', 0));

@@ -2,6 +2,7 @@ import * as http from 'http';
 import * as querystring from 'querystring';
 import * as fs from 'fs';
 import * as url from 'url';
+import * as path from 'path';
 
 /**
  * Read all the data from an HTTP request.
@@ -59,8 +60,14 @@ export function sendfile(res: http.ServerResponse, path: string, mime='text/html
 /**
  * A handler that sends a static file.
  */
-export function file(path: string, mime='text/html') {
+export function file(filepath: string, mime='text/html') {
+  let realpath: string;
+  if (path.isAbsolute(filepath) || require.main === undefined) {
+    realpath = filepath;
+  } else {
+    realpath = path.join(path.dirname(require.main.filename), filepath);
+  }
   return (req: http.IncomingMessage, res: http.ServerResponse) => {
-    sendfile(res, path, mime);
+    sendfile(res, realpath, mime);
   };
 }
