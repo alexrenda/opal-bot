@@ -1,7 +1,0 @@
-[submodule "opal"]
-	path = opal
-	url = git@github.com:sampsyo/opal.git
-	branch = distributed
-[submodule "opal-transformer"]
-	path = opal-transformer
-	url = 080d7a77d73fe34e4aa2f39f5842cd196ef802a2@github.com:alexrenda/opal-transformer.git
