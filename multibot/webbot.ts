@@ -5,6 +5,7 @@
 import * as basebot from './basebot';
 import * as libweb from '../libweb';
 import * as http from 'http';
+import * as url from 'url';
 import * as util from 'util';
 import SSE = require('sse-writer');
 
@@ -94,6 +95,15 @@ class SSEBuffer {
    * Send an event.
    */
   send(name: string, data: string) {
+    let regexp = /(https?:\/\/[^\s]*)/g;
+    let match = data.match(regexp);
+    if (match) {
+      for (let matchedUrl in match) {
+        let parsed = url.parse(matchedUrl);
+        data = data.replace(matchedUrl, `<a href="${parsed.path}">${matchedUrl}</a>`);
+      }
+    }
+
     let id = this.lastId + 1;
     this.lastId = id;
 
