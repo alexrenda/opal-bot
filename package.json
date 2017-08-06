@@ -37,10 +37,8 @@
   "devDependencies": {
     "typescript": "^2.4.0"
   },
-  "bin": {
-    "bot": "build/bot.js"
-  },
   "scripts": {
+    "postinstall": "make build/bot.js",
     "build": "tsc",
     "build-web": "tsc -p web"
   }
