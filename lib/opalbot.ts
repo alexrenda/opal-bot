@@ -346,6 +346,15 @@ export class OpalBot {
   }
 
   /**
+   * Conversation where the user wants to set up their calendar settings.
+   */
+  async handle_who(conv: Conversation) {
+    let users = this.users.mapReduce((item: User) => item.slack_id, (ids: string[]) => ids.join(', '));
+    conv.send("Here are all the users I know about:");
+    conv.send(users);
+  }
+
+  /**
    * Conversation where the user asks for help using the bot.
    */
   async handle_help(conv: Conversation) {
@@ -383,6 +392,8 @@ export class OpalBot {
         await this.handle_setup_calendar(conv);
       } else if (intent === "help") {
         await this.handle_help(conv);
+      } else if (intent === "who") {
+        await this.handle_who(conv);
       } else {
         await this.handle_default(conv);
       }
