@@ -38,7 +38,6 @@
     "typescript": "^2.4.0"
   },
   "scripts": {
-    "postinstall": "make build/bot.js",
     "build": "tsc",
     "build-web": "tsc -p web"
   }
