@@ -42,7 +42,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "prepublish": "make build/bot.js",
     "build-web": "tsc -p web"
   }
 }
