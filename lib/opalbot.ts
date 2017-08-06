@@ -350,8 +350,12 @@ export class OpalBot {
    */
   async handle_who(conv: Conversation) {
     let users = this.users.mapReduce((item: User) => item.slack_id, (ids: string[]) => ids.join(', '));
-    conv.send("Here are all the users I know about:");
-    conv.send(users);
+    if (users.length == 0) {
+      conv.send("No users set up!");
+    } else {
+      conv.send("Here are all the users I know about:");
+      conv.send(users);
+    }
   }
 
   /**
