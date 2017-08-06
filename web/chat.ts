@@ -22,8 +22,10 @@ document.addEventListener("DOMContentLoaded", () => {
     li.appendChild(whoSpan);
 
     // Message text.
-    let msgText = document.createTextNode(msg);
-    li.appendChild(msgText);
+    let msgSpan = document.createElement("span");
+    msgSpan.className = "message-text";
+    msgSpan.innerHTML = msg;
+    li.appendChild(msgSpan);
 
     incomingList.appendChild(li);
 
