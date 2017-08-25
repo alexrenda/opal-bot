@@ -376,6 +376,11 @@ export class OpalBot {
    * Handle a new conversation by dispatching based on intent.
    */
   async interact(text: string, conv: Conversation) {
+    if (text.trim() === '') {
+      // if no message was sent, don't even try to parse it
+      return;
+    }
+
     let res = await this.wit.message(text, {});
     console.log(`Wit parse: ${util.inspect(res, { depth: undefined })}`);
 
