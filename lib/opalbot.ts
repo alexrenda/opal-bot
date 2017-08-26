@@ -366,10 +366,15 @@ export class OpalBot {
   }
 
   /**
+   * Response sent when no other response is appropriate
+   */
+  private default_response : string = ':confused: :grey_question:';
+
+  /**
    * Called when a conversation has a missing or unrecognized intent.
    */
   async handle_default(conv: Conversation) {
-    conv.send(':confused: :grey_question:');
+    conv.send(this.default_response);
   }
 
   /**
@@ -378,6 +383,9 @@ export class OpalBot {
   async interact(text: string, conv: Conversation) {
     if (text.trim() === '') {
       // if no message was sent, don't even try to parse it
+      return;
+    } else if (text.trim() === this.default_response) {
+      // don't respond to another bot being confused
       return;
     }
 
