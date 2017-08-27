@@ -2,7 +2,6 @@ import { Wit } from 'node-wit';
 import * as Loki from 'lokijs';
 import * as minimist from 'minimist';
 import * as opal from 'opal';
-import * as url from 'url';
 
 import { OpalBot } from './lib/opalbot';
 
@@ -19,11 +18,6 @@ function openDB(filename: string): Promise<Loki> {
   });
 }
 
-let web_url = process.env['WEB_URL'] || 'http://localhost:5000';
-let _parsed_url = url.parse(web_url);
-let web_hostname = _parsed_url.hostname!;
-let web_port = _parsed_url.port!;
-
 /**
  * Run the bot.
  */
@@ -34,7 +28,7 @@ async function main(ctx: opal.Context) {
     console.error("missing WIT_TOKEN");
     return;
   }
-
+  let web_url = process.env['WEB_URL'] || 'http://localhost:5000';
   let bot = new OpalBot(
     new Wit({ accessToken: wit_token }),
     await openDB(DB_NAME),
@@ -95,4 +89,4 @@ async function main(ctx: opal.Context) {
  */
 class OpalBotNode extends opal.OpalNode {}
 
-opal.opal(main, new OpalBotNode(web_hostname, 0));
+opal.opal(main, new OpalBotNode('localhost', 0));
