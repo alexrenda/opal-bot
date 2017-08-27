@@ -22,6 +22,7 @@ function openDB(filename: string): Promise<Loki> {
 let web_url = process.env['WEB_URL'] || 'http://localhost:5000';
 let _parsed_url = url.parse(web_url);
 let web_hostname = _parsed_url.hostname!;
+let web_port = _parsed_url.port!;
 
 /**
  * Run the bot.
@@ -80,7 +81,7 @@ async function main(ctx: opal.Context) {
   }
 
   // Start the web server.
-  await bot.runWeb(0);
+  await bot.runWeb(5000);
 
   // Terminal.
   if (opts['term']) {
