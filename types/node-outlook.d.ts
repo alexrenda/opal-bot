@@ -26,9 +26,9 @@ export interface APICallParams {
   token: string;
   user: User;
   method: string;
-  query: { [key: string]: string };
-  payload: { [key: string]: string } | string;
-  headers: { [key: string]: string } | string;
+  query?: { [key: string]: string };
+  payload?: { [key: string]: string } | string;
+  headers?: { [key: string]: string } | string;
 }
 
 /**
