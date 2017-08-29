@@ -282,19 +282,27 @@ export class OpalBot {
       this.db.saveDatabase();
     }
 
-    // Get the calendar from the appropriate service.
-    if (user.settings.service === 'caldav') {
-      let cd = user.settings.caldav!;
-      return new caldav.Calendar(cd.url, cd.username, cd.password);
-    } else if (user.settings.service === 'office') {
-      let token = user.settings.officeToken!;
-      return new office.Calendar(token);
-    } else if (user.settings.service === 'remote') {
-      let rem = user.settings.remote!;
-      return new remote.Calendar(rem.hostname, rem.port);
-    }
+    return await this.createCalendarFromSettings(user.settings);
+  }
 
-    return null;
+  /**
+   * Get the appropriate Calendar object, or null if the settings have
+   * not been initialized
+   */
+  async createCalendarFromSettings(settings: Settings) : Promise<Calendar | null> {
+    // Get the calendar from the appropriate service.
+    if (settings.service === 'caldav') {
+      let cd = settings.caldav!;
+      return new caldav.Calendar(cd.url, cd.username, cd.password);
+    } else if (settings.service === 'office') {
+      let token = settings.officeToken!;
+      return new office.Calendar(token);
+    } else if (settings.service === 'remote') {
+      let rem = settings.remote!;
+      return new remote.Calendar(rem.hostname, rem.port);
+    } else {
+      return null;
+    }
   }
 
   /**
