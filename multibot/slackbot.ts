@@ -68,7 +68,7 @@ export interface RTMStartData {
   groups: object[];
   ims: IM[];
   cache_ts: number;
-  users: object[];
+  users: User[];
   url: string;
   scopes: string[];
   acceptedScopes: string[];
@@ -84,12 +84,18 @@ export interface Message {
   team: string;
 };
 
+export interface TeamJoin {
+  type: string;
+  user: User;
+}
+
 /**
  * Types for our renamed events.
  */
 interface Events {
   ready: () => void;
   message: (message: Message) => void;
+  team_join: (team_join: TeamJoin) => void;
 };
 
 /**
@@ -98,6 +104,7 @@ interface Events {
 const EVENT_IDS = {
   ready: slack_client.CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED,
   message: slack_client.RTM_EVENTS.MESSAGE,
+  team_join: slack_client.RTM_EVENTS.TEAM_JOIN,
 };
 
 type MessageHandler = (message: Message) => void;
@@ -144,6 +151,7 @@ export class SlackBot implements basebot.Bot {
   public ims: Map<string, IM> = new Map();
   public team: Team;
   public self: User;
+  public users: Map<string, User> = new Map();
 
   public onconverse: basebot.ConversationHandler | null = null;
   public spool = new basebot.Spool<string, Message>();
@@ -167,18 +175,45 @@ export class SlackBot implements basebot.Bot {
 
       this.team = startData.team;
       this.self = startData.self;
+      startData.users.forEach((user) => {
+        this.users.set(user.id, user);
+      });
     });
 
     // Event handler for dispatching waited-on messages.
-    this.on("message", (message) => {
+    this.on("message", (message: Message) => {
       this.spool.fire(
         this,
         message.channel,
         message,
         message.text,
-        () => new Conversation(this, message.channel, message.user),
+        () => {
+          let user = this.resolveUser(message.user);
+          let user_id: string;
+          if (user === null) {
+            user_id = message.user;
+          } else {
+            user_id = user.name;
+          }
+          // TODO: would be interesting to have a weighted set of aliases
+          // for a given user (e.g. :(1.0, "Alex Renda"), (1.0, "alex.renda"), (0.9, "Renda"), (0.8, "Alex"), ...)
+          return new Conversation(this, message.channel, user_id)
+        },
       );
     });
+    this.on("team_join", (event: TeamJoin) => {
+      let user = event.user;
+      this.users.set(user.id, user);
+    });
+  }
+
+  resolveUser(id: string) : User | null {
+    let user = this.users.get(id);
+    if (user === undefined) {
+      return null;
+    } else {
+      return user;
+    }
   }
 
   /**
