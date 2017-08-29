@@ -301,7 +301,7 @@ export class OpalBot {
    * Conversation with a greeting intent.
    */
   async handle_greeting(conv: Conversation) {
-    conv.send("hi!");
+    conv.send(`hi, ${conv.user}!`);
   }
 
   /**
