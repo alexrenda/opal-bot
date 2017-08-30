@@ -206,7 +206,7 @@ function eventFromOffice(event: outlook.Event): calbase.Event {
  * This is a subset of the parameters for the underlying library. We provide
  * the authentication token and the user details.
  */
-type RequestParams = Pick<outlook.APICallParams, 'url' | 'method' | 'query'>;
+type RequestParams = Pick<outlook.APICallParams, 'url' | 'method' | 'query' | 'payload'>;
 
 /**
  * Views onto a particular Office 365 user's calendar data.
@@ -244,7 +244,7 @@ export class Calendar implements calbase.Calendar {
       outlook.base.makeApiCall(fullParams, (error: any, response: any) => {
         if (error) {
           reject(error);
-        } else if (response.statusCode != 200) {
+        } else if (response.statusCode < 200 || response.statusCode >= 300) {
           reject("HTTP error " + response.statusCode +
                  "; body: " + JSON.stringify(response.body));
         } else {
@@ -272,6 +272,20 @@ export class Calendar implements calbase.Calendar {
   }
 
   async scheduleEvent(event: calbase.Event): Promise<boolean> {
-    throw new Error('Unimplemented');
+    return await this.request({
+      url: 'https://outlook.office.com/api/v2.0/me/events',
+      method: 'POST',
+      payload: {
+        'Subject': event.title,
+        'Start': {
+          'DateTime': dateToOfficeLocal(event.start),
+          'TimeZone': 'UTC'
+        },
+        'End': {
+          'DateTime': dateToOfficeLocal(event.end),
+          'TimeZone': 'UTC'
+        }
+      },
+    }).then(() => true, () => false);
   }
 }
