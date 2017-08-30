@@ -12,13 +12,14 @@ import { Wit } from 'node-wit';
 import * as wit from './wit';
 import * as libweb from '../libweb';
 import * as http from 'http';
+import * as opal from 'opal';
 import * as path from 'path';
 import fetch from 'node-fetch';
 import { findURL, gitSummary, IVars, randomString } from './util';
 import * as caldav from '../multical/caldav';
 import * as office from '../multical/office';
 import * as remote from '../multical/remote';
-import { Calendar } from '../multical/calbase';
+import { Calendar, Event } from '../multical/calbase';
 import * as moment from 'moment';
 import * as nunjucks from 'nunjucks';
 
@@ -338,11 +339,113 @@ export class OpalBot {
   }
 
   /**
+   * Convenience function for repeatedly querying user for a missing piece of
+   *   information, until the user requests to cancel.
+   * Returns a wit.Entity on success, or null on failure/cancel
+   */
+  async query_loop(conv: Conversation, value: wit.Entity | null, prompt: string, entity_tag: string) {
+    while (value === null) {
+      conv.send(prompt + "\n(\"cancel\" to quit)");
+      let response = await conv.recv();
+
+      // sometimes wit dies on us
+      let res = await this.wit.message(response, {}).catch((e) => {
+        conv.send(`Got an unexpected error: ${e}`);
+        return null;
+      });
+      if (res === null) {
+        return null;
+      }
+      if (wit.entityValue(res, "intent") === "cancel") {
+        conv.send("Alright, giving up");
+        return null;
+      }
+      value = wit.getEntity(res, entity_tag);
+    }
+    return value;
+  }
+
+  /**
    * Conversation where the user wants to schedule a meeting.
    */
-  async handle_schedule_meeting(conv: Conversation) {
-    conv.send("let's get to schedulin'! " +
-              "[actually this is not quite implemented yet]");
+  async handle_schedule_meeting(conv: Conversation,
+                                datetime_ent: wit.Entity | null,
+                                slack_id_ent: wit.Entity | null,
+                                duration_ent: wit.Entity | null,
+                               ) {
+    // set up conv user and calendar
+    let me = this.getUser(conv);
+    let myCalendar = await this.createCalendarFromSettings(me.settings);
+    if (myCalendar === null) {
+      conv.send("You don't have any calendars set up!");
+      return;
+    }
+
+    // find the target user for the meeting
+    slack_id_ent = await this.query_loop(conv, slack_id_ent, "Who did you want to schedule that meeting with?", "contact");
+    if (slack_id_ent === null) {
+      return;
+    }
+    let slack_id = slack_id_ent.value;
+    let target = this.users.findOne({ slack_id }) as User;
+    if (!target) {
+      conv.send(`I couldn't find any users named ${slack_id}!`);
+      return;
+    }
+    let targetCalendar = await this.createCalendarFromSettings(target.settings);
+    if (targetCalendar === null) {
+      conv.send(`${target.slack_id} doesn't have any calendars set up!`);
+      return;
+    }
+
+    // get the date and duration of the meeting
+    datetime_ent = await this.query_loop(conv, datetime_ent, "When did you want to schedule that meeting?", "datetime");
+    if (datetime_ent === null) {
+      return;
+    }
+    let datetime = datetime_ent.value;
+    duration_ent = await this.query_loop(conv, duration_ent, "How long should the meeting be?", "duration");
+    if (duration_ent === null) {
+      return;
+    }
+    let duration = moment.duration(duration_ent.normalized.value, duration_ent.normalized.unit);
+
+    // set up the event to be scheduled
+    conv.send(`Scheduling an ${duration} meeting at ${datetime} with ${target.slack_id}`);
+    let start_time = moment(datetime);
+    let ctx = opal.ctx;
+    let event: Event = {
+      title: `Opal-Scheduled event with ${me.slack_id} and ${target.slack_id}`,
+      start: start_time,
+      end: start_time.clone().add(duration),
+    };
+
+    // hypothetical execution of scheduling, to make sure we only schedule
+    //  atomically, if the proposed time works for both people
+    out succeeded;
+    let world = hyp of {
+      let myScheduleSuccessP = myCalendar!.scheduleEvent(event);
+      let targetScheduleSuccessP = targetCalendar!.scheduleEvent(event);
+      let promises = Promise.all([myScheduleSuccessP, targetScheduleSuccessP])
+        .then(([m, t]) => {
+          return m && t;
+        }, (e) => {
+          conv.send(`Issue scheduling: ${e}`);
+          return false;
+        });
+      succeeded = await promises;
+    };
+
+    // check both that scheduling succeeded and the commit succeeded
+    let succeeded_bool = await ctx.get(succeeded, world);
+    if (succeeded_bool) {
+      await ctx.commit(world).then(
+        () => conv.send("Got it."),
+        (e) => conv.send(`Failed to commit the meeting to both calendars: ${e}`)
+      );
+    } else {
+      conv.send("Could not schedule a meeting on both calendars.");
+    }
   }
 
   /**
@@ -412,7 +515,10 @@ export class OpalBot {
       if (intent === "show_calendar") {
         await this.handle_show_calendar(conv);
       } else if (intent === "schedule_meeting") {
-        await this.handle_schedule_meeting(conv);
+        let datetime = wit.getEntity(res, "datetime");
+        let contact = wit.getEntity(res, "contact");
+        let duration = wit.getEntity(res, "duration");
+        await this.handle_schedule_meeting(conv, datetime, contact, duration);
       } else if (intent === "setup_calendar") {
         await this.handle_setup_calendar(conv);
       } else if (intent === "help") {
