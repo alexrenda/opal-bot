@@ -36,6 +36,10 @@ export class Calendar implements calbase.Calendar {
       return { title: ev.title, start: moment(ev.start), end: moment(ev.end) };
     }));
   }
+
+  async scheduleEvent(event: calbase.Event): Promise<boolean> {
+    throw new Error('Unimplemented');
+  }
 }
 
 /**

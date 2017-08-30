@@ -17,4 +17,5 @@ export interface Event {
  */
 export interface Calendar {
   getEvents(start: Moment, end: Moment): Promise<Event[]>;
+  scheduleEvent(event: Event): Promise<boolean>;
 }

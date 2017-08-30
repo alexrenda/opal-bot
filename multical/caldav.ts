@@ -104,7 +104,7 @@ function rangeQuery(start: moment.Moment, end: moment.Moment) {
 /**
  * A client for a specific CalDAV calendar.
  */
-export class Calendar {
+export class Calendar implements calbase.Calendar {
   constructor(
     public url: string,
     public username: string,
@@ -142,5 +142,9 @@ export class Calendar {
     }
 
     return events.map(eventFromICS);
+  }
+
+  async scheduleEvent(event: calbase.Event): Promise<boolean> {
+    throw new Error('Unimplemented');
   }
 }

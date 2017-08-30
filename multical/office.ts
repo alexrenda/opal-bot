@@ -202,7 +202,7 @@ function eventFromOffice(event: outlook.Event): calbase.Event {
 
 /**
  * The parameters for `Calendar.request`.
- * 
+ *
  * This is a subset of the parameters for the underlying library. We provide
  * the authentication token and the user details.
  */
@@ -228,7 +228,7 @@ export class Calendar implements calbase.Calendar {
     // library's typings don't make this public, so we need to resort to
     // a hack...
     let atoken: string = (this.token.token as any).access_token;
-    
+
     // Add on our user-identifying parameters.
     let fullParams = {
       token: atoken,
@@ -238,7 +238,7 @@ export class Calendar implements calbase.Calendar {
       },
       ...params
     };
-    
+
     // Make the API call.
     return new Promise<any>((resolve, reject) => {
       outlook.base.makeApiCall(fullParams, (error: any, response: any) => {
@@ -269,5 +269,9 @@ export class Calendar implements calbase.Calendar {
 
     let events: outlook.Event[] = data.value;
     return events.map(eventFromOffice);
+  }
+
+  async scheduleEvent(event: calbase.Event): Promise<boolean> {
+    throw new Error('Unimplemented');
   }
 }
