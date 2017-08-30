@@ -7,6 +7,7 @@ import * as node_wit from 'node-wit';
 export interface Entity {
   confidence: number;
   value: string;
+  [key: string]: any;
 }
 
 /**
