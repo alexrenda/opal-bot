@@ -19,9 +19,9 @@ export class Calendar implements calbase.Calendar {
   }
 
   public async getEvents(start: moment.Moment, end: moment.Moment) {
-    // opal-tranformer expects a variable named ctx to be in scope
+    // opal-tranformer expects a variable named "ctx" in scope
     let ctx = opal.ctx;
-    // opal-transformer will put a variable named "remote" into scope in the with
+    // opal-transformer expects a variable named "remote" in scope
     let remote = this.remote;
     out result;
     let world = hyp of {
@@ -38,7 +38,18 @@ export class Calendar implements calbase.Calendar {
   }
 
   async scheduleEvent(event: calbase.Event): Promise<boolean> {
-    throw new Error('Unimplemented');
+    // opal-tranformer expects a variable named "ctx" in scope
+    let ctx = opal.ctx;
+    // opal-transformer expects a variable named "remote" in scope
+    let remote = this.remote;
+    out result;
+    let world = hyp of {
+      with remote {
+        result = await remote.scheduleEvent(event);
+      }
+    }
+    return await ctx.commit(world)
+      .then(() => ctx.get<boolean>(result, world), () => false);
   }
 }
 
@@ -73,6 +84,18 @@ class RemoteCalendarNode extends opal.OpalNode {
     }
 
     return await this.underlying.getEvents(start, end);
+  }
+
+  public async scheduleEvent(event: calbase.Event) : Promise<boolean> {
+    // re-initialize moments since Opal de-classifies them (and passes only data)
+    event.start = moment(event.start);
+    event.end = moment(event.end);
+
+    if (this.underlying === null) {
+      throw Error('Underlying not set!');
+    }
+
+    return await this.underlying.scheduleEvent(event);
   }
 
   public getId() {
