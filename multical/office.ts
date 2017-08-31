@@ -161,7 +161,7 @@ export class Client {
  * Given a `Moment`, format a string for the Office 365 REST API.
  */
 function dateToOfficeLocal(m: moment.Moment): string {
-  return m.format('YYYY-MM-DDThh:mm:ss');
+  return m.format('YYYY-MM-DDTHH:mm:ss');
 }
 
 /**
