@@ -31,15 +31,17 @@ async function main(ctx: opal.Context) {
     return;
   }
   let web_url = process.env['WEB_URL'] || 'http://localhost';
-  web_url = util.formatServedUrl(web_url);
 
   let port: number;
   let parsed_web_url = url.parse(web_url);
   if (parsed_web_url.port !== null && parsed_web_url.port !== undefined) {
     port = parseInt(parsed_web_url.port);
   } else {
-    port = 0;
+    port = 5000;
   }
+
+  parsed_web_url.port = `${port}`;
+  web_url = util.formatServedUrl(parsed_web_url);
 
   let bot = new OpalBot(
     new Wit({ accessToken: wit_token }),
