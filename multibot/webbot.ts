@@ -156,19 +156,15 @@ export class WebBot implements basebot.Bot {
    * Send a message to clients.
    */
   send(who: string, text: string) {
-    console.log(`Sending ${text}`);
-
     let regexp = /(https?:\/\/[^\s]*)/g;
     let match = text.match(regexp);
     if (match) {
       for (let matchedUrl of match) {
         console.log(`Replacing  ${matchedUrl}`);
         let parsed = url.parse(matchedUrl);
-        console.log
         text = text.replace(matchedUrl, `<a href="${parsed.path}">${matchedUrl}</a>`);
       }
     }
-    console.log(`Done: ${text}`);
 
     this.ssebuf.send('message', JSON.stringify({ who, text }));
   }
