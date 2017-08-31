@@ -102,24 +102,28 @@ export class IVars<T> {
  * hostnames are formatted as http://PORT.hostname:80/, instead of
  * http://hostname:PORT/
  */
-export function formatServedUrl(url: url.URL) {
-  let res = '';
-  if (url.protocol !== null) {
-    res += `${url.protocol}//`;
+export function formatServedUrl(m_url: url.Url | string) {
+  if (typeof m_url === 'string') {
+    m_url = url.parse(m_url)!;
   }
 
-  if (url.port === null) {
-    res += url.hostname;
+  let res = '';
+  if (m_url.protocol !== null) {
+    res += `${m_url.protocol}//`;
+  }
+
+  if (m_url.port === null) {
+    res += m_url.hostname;
   } else if (process.env['OPAL_PORT_ROUTING'] !== undefined) {
-    res += `${url.port}.${url.hostname}`;
+    res += `${m_url.port}.${m_url.hostname}`;
   } else {
-    res += `${url.hostname}:${url.port}`;
+    res += `${m_url.hostname}:${m_url.port}`;
   }
-  if (url.pathname !== null) {
-    res += url.pathname;
+  if (m_url.pathname !== null) {
+    res += m_url.pathname;
   }
-  if (url.search !== null) {
-    res += url.search;
+  if (m_url.search !== null) {
+    res += m_url.search;
   }
 
   return res;
