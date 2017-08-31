@@ -12,7 +12,7 @@ import * as office from './multical/office';
 import * as remote from './multical/remote';
 import * as opal from 'opal';
 import * as url from 'url';
-import * as util from 'lib/util';
+import * as util from './lib/util';
 
 async function main() {
   let parser = new argparse.ArgumentParser({ description: 'Launch a remote calendar' });
