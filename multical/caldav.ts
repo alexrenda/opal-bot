@@ -8,6 +8,7 @@ import * as ical from 'ical.js';
 import * as icsutil from './icsutil';
 import * as calbase from './calbase';
 import * as moment from 'moment';
+import * as util from '../lib/util';
 
 /**
  * Encode a string using base64.
@@ -145,6 +146,40 @@ export class Calendar implements calbase.Calendar {
   }
 
   async scheduleEvent(event: calbase.Event): Promise<boolean> {
-    throw new Error('Unimplemented');
+    let uid = util.randomString();
+
+    // set up the even ical as a new separate calendar with a single event
+    let cal_comp = new ical.Component(['vcalendar', [], []]);
+    let event_comp = new ical.Component('vevent');
+    event_comp.updatePropertyWithValue('uid', uid);
+    cal_comp.addSubcomponent(event_comp);
+    cal_comp.updatePropertyWithValue('version', '2.0');
+
+    // convert calbase.Event to ical.Event
+    let ical_event = new ical.Event(event_comp);
+    ical_event.summary = event.title;
+    ical_event.startDate = ical.Time.fromJSDate(event.start.toDate());
+    ical_event.endDate = ical.Time.fromJSDate(event.end.toDate());
+
+    // we must PUT to .../calendars/CALNAME/UID.ics
+    let ics_path = uid + '.ics';
+    let m_url: string;
+    if (this.url.endsWith('/')) {
+      m_url = this.url + ics_path;
+    } else {
+      m_url = this.url + '/' + ics_path;
+    }
+
+    let res = await fetch(m_url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'text/calendar',
+        'Authorization': basicauth(this.username, this.password),
+        'User-Agent': 'opal/1.0.0',
+      },
+      body: cal_comp.toString(),
+    });
+
+    return res.ok;
   }
 }
