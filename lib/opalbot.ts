@@ -165,7 +165,7 @@ export class OpalBot {
   /**
    * Connect the bot to a Slack team.
    */
-  connectSlack(token: string, statusChan: string) {
+  connectSlack(token: string, statusChan: string, chaturl?: string) {
     let slack = new SlackBot(token);
 
     // Handle Slack connection.
@@ -175,6 +175,9 @@ export class OpalBot {
       if (status_channel) {
         let commit = await gitSummary(__dirname);
         slack.send(`:wave: @ ${commit}`, status_channel.id);
+        if (chaturl) {
+          slack.send(`Come talk to me at ${chaturl} (or here of course)`, status_channel.id);
+        }
       }
     });
 

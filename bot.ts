@@ -66,7 +66,7 @@ async function main(ctx: opal.Context) {
   if (opts['slack']) {
     let slack_token = process.env['SLACK_BOT_TOKEN'];
     if (slack_token) {
-      bot.connectSlack(slack_token, STATUS_CHAN);
+      bot.connectSlack(slack_token, STATUS_CHAN, opts['web'] && web_url);
     } else {
       console.error("missing SLACK_BOT_TOKEN");
     }
