@@ -2,6 +2,7 @@ import { Wit } from 'node-wit';
 import * as Loki from 'lokijs';
 import * as minimist from 'minimist';
 import * as opal from 'opal';
+import * as util from './lib/util';
 
 import { OpalBot } from './lib/opalbot';
 
@@ -29,6 +30,8 @@ async function main(ctx: opal.Context) {
     return;
   }
   let web_url = process.env['WEB_URL'] || 'http://localhost:5000';
+  web_url = util.formatServedUrl(web_url);
+
   let bot = new OpalBot(
     new Wit({ accessToken: wit_token }),
     await openDB(DB_NAME),
