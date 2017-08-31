@@ -4,6 +4,7 @@
 import * as child_process from 'child_process';
 const urlRegex: RegExp = require('url-regex')();
 import * as crypto from 'crypto';
+import * as url from 'url';
 
 /**
  * Get the current git revision string for a repository.
@@ -91,4 +92,35 @@ export class IVars<T> {
       this.callbacks.set(key, resolve);
     });
   }
+}
+
+/**
+ * Format a URL served by this server for external display (since we
+ * must be cognizant to some extent of routing to/from this endpoint)
+ *
+ * If the OPAL_PORT_ROUTING environmental variable is set, then
+ * hostnames are formatted as http://PORT.hostname:80/, instead of
+ * http://hostname:PORT/
+ */
+export function formatServedUrl(url: url.URL) {
+  let res = '';
+  if (url.protocol !== null) {
+    res += `${url.protocol}//`;
+  }
+
+  if (url.port === null) {
+    res += url.hostname;
+  } else if (process.env['OPAL_PORT_ROUTING'] !== undefined) {
+    res += `${url.port}.${url.hostname}`;
+  } else {
+    res += `${url.hostname}:${url.port}`;
+  }
+  if (url.pathname !== null) {
+    res += url.pathname;
+  }
+  if (url.search !== null) {
+    res += url.search;
+  }
+
+  return res;
 }
