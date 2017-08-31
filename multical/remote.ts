@@ -172,7 +172,7 @@ async function main() {
       }
       hostname = parsed.hostname;
 
-      if (parsed.port !== undefined) {
+      if (parsed.port !== null && parsed.port !== undefined) {
         port = parseInt(parsed.port);
       }
     } else {

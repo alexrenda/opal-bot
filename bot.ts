@@ -2,6 +2,7 @@ import { Wit } from 'node-wit';
 import * as Loki from 'lokijs';
 import * as minimist from 'minimist';
 import * as opal from 'opal';
+import * as url from 'url';
 import * as util from './lib/util';
 
 import { OpalBot } from './lib/opalbot';
@@ -29,8 +30,16 @@ async function main(ctx: opal.Context) {
     console.error("missing WIT_TOKEN");
     return;
   }
-  let web_url = process.env['WEB_URL'] || 'http://localhost:5000';
+  let web_url = process.env['WEB_URL'] || 'http://localhost';
   web_url = util.formatServedUrl(web_url);
+
+  let port: number;
+  let parsed_web_url = url.parse(web_url);
+  if (parsed_web_url.port !== null && parsed_web_url.port !== undefined) {
+    port = parseInt(parsed_web_url.port);
+  } else {
+    port = 0;
+  }
 
   let bot = new OpalBot(
     new Wit({ accessToken: wit_token }),
@@ -78,7 +87,7 @@ async function main(ctx: opal.Context) {
   }
 
   // Start the web server.
-  await bot.runWeb(5000);
+  await bot.runWeb(port);
 
   // Terminal.
   if (opts['term']) {
