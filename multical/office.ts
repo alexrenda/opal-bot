@@ -278,11 +278,11 @@ export class Calendar implements calbase.Calendar {
       payload: {
         'Subject': event.title,
         'Start': {
-          'DateTime': dateToOfficeLocal(event.start),
+          'DateTime': dateToOfficeLocal(moment.utc(event.start)),
           'TimeZone': 'UTC'
         },
         'End': {
-          'DateTime': dateToOfficeLocal(event.end),
+          'DateTime': dateToOfficeLocal(moment.utc(event.end)),
           'TimeZone': 'UTC'
         }
       },
