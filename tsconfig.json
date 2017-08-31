@@ -17,6 +17,7 @@
     },
     "files": [
         "bot.ts",
+        "remote_client.ts",
         "lib/opalbot.ts",
         "lib/util.ts",
         "lib/wit.ts",
