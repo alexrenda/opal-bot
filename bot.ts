@@ -33,8 +33,8 @@ async function main(ctx: opal.Context) {
   let web_url = process.env['WEB_URL'] || 'http://localhost';
 
   let port: number;
-  let parsed_web_url = url.parse(web_url);
-  if (parsed_web_url.port !== null && parsed_web_url.port !== undefined) {
+  let parsed_web_url = new url.URL(web_url);
+  if (parsed_web_url.port) {
     port = parseInt(parsed_web_url.port);
   } else {
     port = 5000;
@@ -66,7 +66,15 @@ async function main(ctx: opal.Context) {
   if (opts['slack']) {
     let slack_token = process.env['SLACK_BOT_TOKEN'];
     if (slack_token) {
-      bot.connectSlack(slack_token, STATUS_CHAN, opts['web'] && web_url + '/chat');
+      let chat_web_href: string | undefined = undefined;
+      if (opts['web']) {
+        chat_web_href = web_url;
+        if (!web_url.endsWith('/')) {
+          chat_web_href += '/';
+        }
+        chat_web_href += 'chat';
+      }
+      bot.connectSlack(slack_token, STATUS_CHAN, chat_web_href);
     } else {
       console.error("missing SLACK_BOT_TOKEN");
     }
