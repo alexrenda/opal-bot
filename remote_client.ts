@@ -88,8 +88,8 @@ async function createRemote(args: RemoteArgs) {
  * ====================================
  */
 interface OfficeArgs {
-  client_id: string,
-  client_secret: string,
+  client_id?: string,
+  client_secret?: string,
 };
 
 async function createOfficeParser(subParsers: argparse.SubParser) {
@@ -108,7 +108,7 @@ async function createOfficeParser(subParsers: argparse.SubParser) {
 async function createOffice(args: OfficeArgs) {
   // read client_id and client_secret from args then env
   let client_id: string;
-  if (args.client_id !== null) {
+  if (args.client_id) {
     client_id = args.client_id;
   } else if (process.env['OFFICE_CLIENT_ID'] !== undefined) {
     client_id = process.env['OFFICE_CLIENT_ID'];
@@ -117,7 +117,7 @@ async function createOffice(args: OfficeArgs) {
   }
 
   let client_secret: string;
-  if (args.client_secret !== null) {
+  if (args.client_secret) {
     client_secret = args.client_secret;
   } else if (process.env['OFFICE_CLIENT_SECRET'] !== undefined) {
     client_secret = process.env['OFFICE_CLIENT_SECRET'];
@@ -125,7 +125,7 @@ async function createOffice(args: OfficeArgs) {
     throw new Error('OFFICE_CLIENT_SECRET must be set, either through an argument or an environmental variable');
   }
 
-  // the hostname/port are either localhost/57768 or can be made
+  // the hostname/port are either localhost/443 or can be made
   // more specific with WEB_URL
   let port : number = 443;
   let hostname : string;
@@ -156,7 +156,7 @@ async function createOffice(args: OfficeArgs) {
     });
   });
 
-  let callback_url = util.formatServedUrl(`http://${hostname}:${port}`);
+  let callback_url = `http://${hostname}:${port}`;
 
   // create the office client for getting a token
   let officeClient = new office.Client(client_id, client_secret, callback_url);

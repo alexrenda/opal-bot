@@ -93,38 +93,3 @@ export class IVars<T> {
     });
   }
 }
-
-/**
- * Format a URL served by this server for external display (since we
- * must be cognizant to some extent of routing to/from this endpoint)
- *
- * If the OPAL_PORT_ROUTING environmental variable is set, then
- * hostnames are formatted as http://PORT.hostname:80/, instead of
- * http://hostname:PORT/
- */
-export function formatServedUrl(m_url: url.Url | string) {
-  if (typeof m_url === 'string') {
-    m_url = url.parse(m_url)!;
-  }
-
-  let res = '';
-  if (m_url.protocol !== null) {
-    res += `${m_url.protocol}//`;
-  }
-
-  if (m_url.port === null) {
-    res += m_url.hostname;
-  } else if (process.env['OPAL_PORT_ROUTING'] !== undefined) {
-    res += `${m_url.port}.${m_url.hostname}`;
-  } else {
-    res += `${m_url.hostname}:${m_url.port}`;
-  }
-  if (m_url.pathname !== null) {
-    res += m_url.pathname;
-  }
-  if (m_url.search !== null) {
-    res += m_url.search;
-  }
-
-  return res;
-}

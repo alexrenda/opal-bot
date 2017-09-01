@@ -41,7 +41,7 @@ async function main(ctx: opal.Context) {
   }
 
   parsed_web_url.port = `${port}`;
-  web_url = util.formatServedUrl(parsed_web_url);
+  web_url = parsed_web_url.href;
 
   let bot = new OpalBot(
     new Wit({ accessToken: wit_token }),
