@@ -66,15 +66,7 @@ async function main(ctx: opal.Context) {
   if (opts['slack']) {
     let slack_token = process.env['SLACK_BOT_TOKEN'];
     if (slack_token) {
-      let chat_web_href: string | undefined = undefined;
-      if (opts['web']) {
-        chat_web_href = web_url;
-        if (!web_url.endsWith('/')) {
-          chat_web_href += '/';
-        }
-        chat_web_href += 'chat';
-      }
-      bot.connectSlack(slack_token, STATUS_CHAN, chat_web_href);
+      bot.connectSlack(slack_token, STATUS_CHAN);
     } else {
       console.error("missing SLACK_BOT_TOKEN");
     }

@@ -90,6 +90,11 @@ export class OpalBot {
     public webURL: string,
     public webdir = 'web',
   ) {
+    // trim off trailing slash
+    if (this.webURL.endsWith('/')) {
+      this.webURL = this.webURL.slice(0, this.webURL.length - 1);
+    }
+
     // Get or create a database collection for users.
     this.users = (db.getCollection("users") ||
       db.addCollection("users")) as LokiCollection<User>;
@@ -165,7 +170,7 @@ export class OpalBot {
   /**
    * Connect the bot to a Slack team.
    */
-  connectSlack(token: string, statusChan: string, chaturl?: string) {
+  connectSlack(token: string, statusChan: string) {
     let slack = new SlackBot(token);
 
     // Handle Slack connection.
@@ -175,9 +180,7 @@ export class OpalBot {
       if (status_channel) {
         let commit = await gitSummary(__dirname);
         slack.send(`:wave: @ ${commit}`, status_channel.id);
-        if (chaturl) {
-          slack.send(`Come talk to me at ${chaturl} (or here of course)`, status_channel.id);
-        }
+        slack.send(`Come talk to me at ${this.webURL}/chat`, status_channel.id);
       }
     });
 
