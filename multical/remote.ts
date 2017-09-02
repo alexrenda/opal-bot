@@ -9,10 +9,18 @@ import * as opal from 'opal';
 /**
  * A client that functions as a transparent proxy for a remote calendar
  */
-export class Calendar implements calbase.Calendar {
+export class Calendar extends calbase.Calendar {
   private remote: RemoteCalendarNode;
   constructor(hostname: string, port: number) {
+    super();
     this.remote = new RemoteCalendarNode(hostname, port);
+  }
+
+  async getEventsImpl(start: moment.Moment, end: moment.Moment): Promise<calbase.Event[]> {
+    throw new Error("Remote calendars don't separate implementation from remoting");
+  }
+  async scheduleEventImpl(event: calbase.Event): Promise<boolean> {
+    throw new Error("Remote calendars don't separate implementation from remoting");
   }
 
   public async getEvents(start: moment.Moment, end: moment.Moment) {

@@ -211,12 +211,13 @@ type RequestParams = Pick<outlook.APICallParams, 'url' | 'method' | 'query' | 'p
 /**
  * Views onto a particular Office 365 user's calendar data.
  */
-export class Calendar implements calbase.Calendar {
+export class Calendar extends calbase.Calendar {
   public readonly email: string;
 
   constructor(
     public readonly token: Token
   ) {
+    super();
     this.email = emailFromToken(token);
   }
 
@@ -257,7 +258,7 @@ export class Calendar implements calbase.Calendar {
   /**
    * Get event instances from the user's calendar between the two dates.
    */
-  async getEvents(start: moment.Moment, end: moment.Moment) {
+  async getEventsImpl(start: moment.Moment, end: moment.Moment) {
     let data = await this.request({
       url: 'https://outlook.office.com/api/v2.0/me/calendarview',
       method: 'GET',
@@ -271,7 +272,7 @@ export class Calendar implements calbase.Calendar {
     return events.map(eventFromOffice);
   }
 
-  async scheduleEvent(event: calbase.Event): Promise<boolean> {
+  async scheduleEventImpl(event: calbase.Event): Promise<boolean> {
     return await this.request({
       url: 'https://outlook.office.com/api/v2.0/me/events',
       method: 'POST',

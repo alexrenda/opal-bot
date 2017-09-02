@@ -105,17 +105,19 @@ function rangeQuery(start: moment.Moment, end: moment.Moment) {
 /**
  * A client for a specific CalDAV calendar.
  */
-export class Calendar implements calbase.Calendar {
+export class Calendar extends calbase.Calendar {
   constructor(
     public url: string,
     public username: string,
     public password: string,
-  ) {}
+  ) {
+    super();
+  }
 
   /**
    * Fetch events from the calendar between a pair of times.
    */
-  async getEvents(start: moment.Moment, end: moment.Moment) {
+  async getEventsImpl(start: moment.Moment, end: moment.Moment) {
     let res = await fetch(this.url, {
       method: 'REPORT',
       headers: {
@@ -145,7 +147,7 @@ export class Calendar implements calbase.Calendar {
     return events.map(eventFromICS);
   }
 
-  async scheduleEvent(event: calbase.Event): Promise<boolean> {
+  async scheduleEventImpl(event: calbase.Event): Promise<boolean> {
     let uid = util.randomString();
 
     // set up the even ical as a new separate calendar with a single event

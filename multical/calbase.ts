@@ -2,6 +2,7 @@
  * Base structures common to any calendar API backend.
  */
 import { Moment } from 'moment';
+import * as opal from 'opal';
 
 /**
  * A calendar event.
@@ -15,7 +16,29 @@ export interface Event {
 /**
  * A set of calendar events.
  */
-export interface Calendar {
-  getEvents(start: Moment, end: Moment): Promise<Event[]>;
-  scheduleEvent(event: Event): Promise<boolean>;
+export abstract class Calendar {
+  private eventBuffer: opal.Collection<Event>;
+
+  constructor() {
+    this.eventBuffer = opal.ctx.collection();
+    this.eventBuffer.onTopCommit((set: Set<Event>) => {
+      // TODO this should handle failures more intelligently
+      Promise.all(Array.from(set).map(this.scheduleEventImpl));
+      this.eventBuffer = opal.ctx.collection();
+    });
+  }
+
+  public async getEvents(start: Moment, end: Moment): Promise<Event[]> {
+    let events = await this.getEventsImpl(start, end);
+    events.concat(Array.from(opal.ctx.view(this.eventBuffer)));
+    return events;
+  }
+
+  public async scheduleEvent(event: Event): Promise<boolean> {
+    opal.ctx.add(this.eventBuffer, event);
+    return true;
+  }
+
+  protected abstract getEventsImpl(start: Moment, end: Moment): Promise<Event[]>;
+  protected abstract scheduleEventImpl(event: Event): Promise<boolean>;
 }
