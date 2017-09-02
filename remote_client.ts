@@ -5,6 +5,7 @@
 import * as argparse from 'argparse';
 import * as http from 'http';
 import * as https from 'https';
+import * as fs from 'fs';
 import * as libweb from './libweb';
 import * as calbase from './multical/calbase';
 import * as caldav from './multical/caldav';
@@ -90,6 +91,8 @@ async function createRemote(args: RemoteArgs) {
 interface OfficeArgs {
   client_id?: string,
   client_secret?: string,
+  key_file?: string,
+  cert_file?: string,
 };
 
 async function createOfficeParser(subParsers: argparse.SubParser) {
@@ -102,32 +105,46 @@ async function createOfficeParser(subParsers: argparse.SubParser) {
     help: 'Office secret to use. If empty, must have environmental variable OFFICE_CLIENT_SECRET set.',
     required: false
   });
+  officeParser.addArgument(['--key_file'], {
+    help: 'HTTPS key file to use. If empty, must have environmental variable HTTPS_KEY_FILE set.',
+    required: false
+  });
+  officeParser.addArgument(['--cert_file'], {
+    help: 'HTTPS cert file to use. If empty, must have environmental variable HTTPS_CERT_FILE set.',
+    required: false
+  });
   return officeParser;
 }
 
 async function createOffice(args: OfficeArgs) {
   // read client_id and client_secret from args then env
-  let client_id: string;
-  if (args.client_id) {
-    client_id = args.client_id;
-  } else if (process.env['OFFICE_CLIENT_ID'] !== undefined) {
-    client_id = process.env['OFFICE_CLIENT_ID'];
-  } else {
-    throw new Error('OFFICE_CLIENT_ID must be set, either through an argument or an environmental variable');
+  function readArg(arg_id: keyof OfficeArgs, env_id: string) {
+    if (args[arg_id]) {
+      return args[arg_id];
+    } else if (process.env[env_id]) {
+      return process.env[env_id];
+    } else {
+      throw new Error(`${env_id} must be set, either through an argument or environmental variable`);
+    }
   }
+  let client_id: string = readArg('client_id', 'OFFICE_CLIENT_ID');
+  let client_secret: string = readArg('client_secret', 'OFFICE_CLIENT_SECRET');
 
-  let client_secret: string;
-  if (args.client_secret) {
-    client_secret = args.client_secret;
-  } else if (process.env['OFFICE_CLIENT_SECRET'] !== undefined) {
-    client_secret = process.env['OFFICE_CLIENT_SECRET'];
-  } else {
-    throw new Error('OFFICE_CLIENT_SECRET must be set, either through an argument or an environmental variable');
+  let https_options : https.ServerOptions | null;;
+  try {
+    let key_file: string = readArg('key_file', 'HTTPS_KEY_FILE');
+    let cert_file: string = readArg('cert_file', 'HTTPS_CERT_FILE');
+    https_options = {
+      key: fs.readFileSync(key_file),
+      cert: fs.readFileSync(cert_file),
+    };
+  } catch(e) {
+    https_options = null;
   }
 
   // the hostname/port are either localhost/443 or can be made
   // more specific with WEB_URL
-  let port : number = 443;
+  let port : number = 57768;
   let hostname : string;
 
   // read the hostname/port if it's given in WEB_RUL
@@ -145,9 +162,18 @@ async function createOffice(args: OfficeArgs) {
     hostname = 'localhost';
   }
 
+  let callback_url: string;
   // set up the oauth callback server
   let routes : libweb.Route[] = [];
-  let server = http.createServer(libweb.dispatch(routes));
+  let server: http.Server | https.Server;
+  if (https_options !== null) {
+    server = https.createServer(https_options, libweb.dispatch(routes));
+    callback_url = 'https://';
+  } else {
+    server = http.createServer(libweb.dispatch(routes));
+    callback_url = 'http://';
+  }
+  callback_url += hostname;
 
   // start the server, and get the port it was started on (if it was dynamic)
   port = await new Promise<number>((resolve, reject) => {
@@ -156,7 +182,7 @@ async function createOffice(args: OfficeArgs) {
     });
   });
 
-  let callback_url = `http://${hostname}:${port}`;
+  callback_url += ':' + port;
 
   // create the office client for getting a token
   let officeClient = new office.Client(client_id, client_secret, callback_url);
