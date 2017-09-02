@@ -230,9 +230,9 @@ export class OpalBot {
         key: fs.readFileSync(key),
         cert: fs.readFileSync(cert),
         ca: fs.readFileSync(ca),
-      });
+      }, routes);
     } else {
-      server = http.createServer();
+      server = http.createServer(routes);
     }
 
     return new Promise<void>((resolve, reject) => {
