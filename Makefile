@@ -1,11 +1,11 @@
 build/bot.js: web tsconfig.json $(shell python -c "import json; print(' '.join(json.loads(' '.join(filter(lambda x: '//' not in x, open('tsconfig.json'))))['files']))")
 	node node_modules/opal-transformer/build/main.js tsconfig.json
 
+.PHONY: build web
 web: web/chat.ts
 	tsc -p web
 	cp -R web build/
 
-.PHONY: build
 build:
 	yarn
 	yarn run build
