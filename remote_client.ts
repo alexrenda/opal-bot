@@ -166,6 +166,7 @@ async function createOffice(args: OfficeArgs) {
   console.log(`Visit ${auth.url} to authenticate`);
 
   let token = await auth.token;
+  server.close();
   return new office.Calendar(token);
 }
 
