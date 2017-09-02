@@ -234,10 +234,6 @@ export class OpalBot {
     } else {
       server = http.createServer(routes);
     }
-    console.log(`key: ${key}`);
-    console.log(`cert: ${cert}`);
-    console.log(`ca: ${ca}`);
-    console.log(server);
 
     return new Promise<void>((resolve, reject) => {
       server.listen(port, () => {
