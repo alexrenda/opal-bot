@@ -11,7 +11,9 @@ import { WebBot } from "../multibot/webbot";
 import { Wit } from 'node-wit';
 import * as wit from './wit';
 import * as libweb from '../libweb';
+import * as fs from 'fs';
 import * as http from 'http';
+import * as https from 'https';
 import * as opal from 'opal';
 import * as path from 'path';
 import fetch from 'node-fetch';
@@ -220,8 +222,18 @@ export class OpalBot {
   /**
    * Run Web server.
    */
-  runWeb(port: number): Promise<void> {
-    let server = http.createServer(libweb.dispatch(this.webRoutes));
+  runWeb(port: number, cert?: string, key?: string): Promise<void> {
+    let routes = libweb.dispatch(this.webRoutes);
+    let server: http.Server | https.Server;
+    if (cert && key) {
+      server = https.createServer({
+        key: fs.readFileSync(key),
+        cert: fs.readFileSync(cert)
+      });
+    } else {
+      server = http.createServer();
+    }
+
     return new Promise<void>((resolve, reject) => {
       server.listen(port, () => {
         console.log(`web server running at ${this.webURL}`);
