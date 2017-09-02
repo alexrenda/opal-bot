@@ -222,14 +222,13 @@ export class OpalBot {
   /**
    * Run Web server.
    */
-  runWeb(port: number, key?: string, cert?: string, ca?: string): Promise<void> {
+  runWeb(port: number, key?: string, cert?: string): Promise<void> {
     let routes = libweb.dispatch(this.webRoutes);
     let server: http.Server | https.Server;
-    if (key && cert && ca) {
+    if (key && cert) {
       server = https.createServer({
         key: fs.readFileSync(key),
         cert: fs.readFileSync(cert),
-        ca: fs.readFileSync(ca),
       }, routes);
     } else {
       server = http.createServer(routes);

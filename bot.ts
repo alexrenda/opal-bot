@@ -59,7 +59,7 @@ async function main(ctx: opal.Context) {
   // Parse the command-line options.
   let opts = minimist(process.argv.slice(2), {
     boolean: [ 'term', 'fb', 'slack', 'web' ],
-    string: ['key', 'cert', 'ca'],
+    string: ['key', 'cert'],
     alias: { 'term': ['t'], 'fb': ['f'], 'slack': ['s'], 'web': ['w'] },
   });
 
@@ -90,7 +90,7 @@ async function main(ctx: opal.Context) {
   }
 
   // Start the web server.
-  await bot.runWeb(port, opts['key'], opts['cert'], opts['ca']);
+  await bot.runWeb(port, opts['key'], opts['cert']);
 
   // Terminal.
   if (opts['term']) {
