@@ -234,6 +234,7 @@ export class OpalBot {
     } else {
       server = http.createServer(routes);
     }
+    console.log(server);
 
     return new Promise<void>((resolve, reject) => {
       server.listen(port, () => {
