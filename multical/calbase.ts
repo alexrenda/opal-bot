@@ -22,6 +22,8 @@ export abstract class Calendar {
   constructor() {
     this.eventBuffer = opal.ctx.collection();
     this.eventBuffer.onTopCommit((set: Set<Event>) => {
+      console.log(`Scheduling for real:`);
+      console.log(`set`);
       // TODO this should handle failures more intelligently
       Promise.all(Array.from(set).map(this.scheduleEventImpl));
       this.eventBuffer = opal.ctx.collection();
@@ -34,7 +36,9 @@ export abstract class Calendar {
     return events;
   }
 
-  public async scheduleEvent(event: Event): Promise<boolean> {
+  public async scheduleEvent(event: Event): Promise<boolean>{
+    console.log(`Fake scheduler:`);
+    console.log(event);
     opal.ctx.add(this.eventBuffer, event);
     return true;
   }
