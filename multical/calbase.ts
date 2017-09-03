@@ -48,7 +48,11 @@ export abstract class Calendar {
 
   resetBuffer() {
     this.eventBuffer = opal.ctx.collection(
-      (world: opal.World) => new EventCollection(world, this));
+      (world: opal.World) => {
+        console.log(`Created eventBuffer in world:`);
+        console.log(world);
+        return new EventCollection(world, this);
+      });
   }
 
   public async getEvents(start: Moment, end: Moment): Promise<Event[]> {
@@ -58,8 +62,6 @@ export abstract class Calendar {
   }
 
   public async scheduleEvent(event: Event): Promise<boolean>{
-    console.log(`Fake scheduler:`);
-    console.log(event);
     opal.ctx.add(this.eventBuffer, event);
     return true;
   }
