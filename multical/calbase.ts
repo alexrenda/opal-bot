@@ -13,6 +13,29 @@ export interface Event {
   end: Moment;
 }
 
+class EventCollection extends opal.ExternalCollection<Event> {
+  constructor (world: opal.World, private readonly cal: Calendar) {
+    super(world);
+  }
+
+  async send(node: opal.PSet.Node<Event>, ops: opal.PSet.Operation<Event>[]) {
+    let edit = new opal.Edit<Event>(ops);
+    edit.foreach({
+      add: async (event: Event) => {
+        node = opal.PSet.add(node, event);
+        await this.cal.scheduleEventImpl(event).catch((e) => {
+          console.log(`got error: ${e}, ${e.stack}`);
+        });;
+      },
+      delete: async (event: Event) => {
+        node = opal.PSet.del(node, event);
+      },
+    });
+    this.cal.resetBuffer();
+    return node;
+  }
+}
+
 /**
  * A set of calendar events.
  */
@@ -20,18 +43,12 @@ export abstract class Calendar {
   private eventBuffer: opal.Collection<Event>;
 
   constructor() {
-    this.eventBuffer = opal.ctx.collection();
-    this.eventBuffer.onTopCommit((set: Set<Event>) => {
-      console.log(`Scheduling for real:`);
-      console.log(set);
-      // TODO this should handle failures more intelligently
-      Promise.all(Array.from(set).map(this.scheduleEventImpl)).catch((e) => {
-        console.log(`got error: ${e}, ${e.stack}`);
-      });
-      console.log(this.eventBuffer);
-      this.eventBuffer = opal.ctx.collection();
-      console.log(this.eventBuffer);
-    });
+    this.resetBuffer();
+  }
+
+  resetBuffer() {
+    this.eventBuffer = opal.ctx.collection(
+      (world: opal.World) => new EventCollection(world, this));
   }
 
   public async getEvents(start: Moment, end: Moment): Promise<Event[]> {
@@ -47,6 +64,6 @@ export abstract class Calendar {
     return true;
   }
 
-  protected abstract getEventsImpl(start: Moment, end: Moment): Promise<Event[]>;
-  protected abstract scheduleEventImpl(event: Event): Promise<boolean>;
+  abstract getEventsImpl(start: Moment, end: Moment): Promise<Event[]>;
+  abstract scheduleEventImpl(event: Event): Promise<boolean>;
 }
