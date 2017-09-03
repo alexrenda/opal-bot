@@ -25,8 +25,12 @@ export abstract class Calendar {
       console.log(`Scheduling for real:`);
       console.log(set);
       // TODO this should handle failures more intelligently
-      Promise.all(Array.from(set).map(this.scheduleEventImpl));
+      Promise.all(Array.from(set).map(this.scheduleEventImpl)).catch((e) => {
+        console.log(`got error: ${e}, ${e.stack}`);
+      });
+      console.log(this.eventBuffer);
       this.eventBuffer = opal.ctx.collection();
+      console.log(this.eventBuffer);
     });
   }
 

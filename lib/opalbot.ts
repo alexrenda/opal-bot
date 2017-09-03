@@ -457,6 +457,8 @@ export class OpalBot {
     // check both that scheduling succeeded and the commit succeeded
     let succeeded_bool = await ctx.get(succeeded, world);
     if (succeeded_bool) {
+      console.log('world:');
+      console.log(world);
       await ctx.commit(world).then(
         () => conv.send("Got it."),
         (e) => conv.send(`Failed to commit the meeting to both calendars: ${e}, ${e.stack}`)
