@@ -215,7 +215,7 @@ export class Calendar extends calbase.Calendar {
   public readonly email: string;
 
   constructor(
-    public readonly token: Token
+    public token: Token
   ) {
     super();
     this.email = emailFromToken(token);
@@ -224,10 +224,14 @@ export class Calendar extends calbase.Calendar {
   /**
    * Internal wrapper for Office API requests.
    */
-  request(params: RequestParams): Promise<any> {
+  async request(params: RequestParams): Promise<any> {
     // The Office API only wants the access token string. And the OAuth
     // library's typings don't make this public, so we need to resort to
     // a hack...
+    if (this.token.expired()) {
+      this.token = await this.token.refresh();
+    }
+
     let atoken: string = (this.token.token as any).access_token;
 
     // Add on our user-identifying parameters.
