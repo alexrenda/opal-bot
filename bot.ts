@@ -15,10 +15,12 @@ const DB_NAME = 'store.json';
  */
 function openDB(filename: string): Promise<Loki> {
   return new Promise((resolve, reject) => {
-    let db = new Loki(filename, { autosave: true });
-    db.loadDatabase({}, (err) => {
-      console.log(`Database ${filename} loaded: ${err}, ${db.serialize()}`);
-      resolve(db);
+    let db = new Loki(filename, {
+      autosave: true,
+      autoload: true,
+      autoloadCallback: () => {
+        resolve(db);
+      },
     });
   });
 }
