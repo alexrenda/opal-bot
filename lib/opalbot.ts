@@ -459,7 +459,7 @@ export class OpalBot {
     if (succeeded_bool) {
       await ctx.commit(world).then(
         () => conv.send("Got it."),
-        (e) => conv.send(`Failed to commit the meeting to both calendars: ${e}`)
+        (e) => conv.send(`Failed to commit the meeting to both calendars: ${e}, ${e.stack}`)
       );
     } else {
       conv.send("Could not schedule a meeting on both calendars.");
