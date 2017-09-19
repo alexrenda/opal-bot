@@ -28,11 +28,17 @@ export class Calendar extends calbase.Calendar {
     let remote = this.remote;
     out result;
     let world = hyp of {
+      console.log(`Getting 1`);
       with remote {
+        console.log(`Getting 2`);
         result = await remote.getEvents(ctx, start, end);
+        console.log(`Getting 3`);
       }
+      console.log(`Getting 4`);
     }
+    console.log(`Getting 5`);
     let events: calbase.Event[] = await ctx.get(result, world) as calbase.Event[];
+    console.log(`Getting 6 ${events}`);
 
     // opal-distributed doesn't pass classes through, so we re-initialize moments
     return events.map((ev => {
