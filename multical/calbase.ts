@@ -18,7 +18,8 @@ class EventCollection extends opal.ExternalCollection<Event> {
     super(world);
   }
 
-  async send(node: opal.PSet.Node<Event>, ops: opal.PSet.Operation<Event>[]) {
+  async send(node: opal.PSet.Node<Event>,
+             ops: opal.PSet.Operation<Event>[]) {
     let edit = new opal.Edit<Event>(ops);
     edit.foreach({
       add: async (event: Event) => {
@@ -47,7 +48,7 @@ export abstract class Calendar {
   }
 
   resetBuffer() {
-    this.eventBuffer = opal.ctx.collection(
+    this.eventBuffer = opal.topctx.collection(
       (world: opal.World) => {
         console.log(`Created eventBuffer in world:`);
         console.log((new Error()).stack);
@@ -56,17 +57,22 @@ export abstract class Calendar {
       });
   }
 
-  public async getEvents(start: Moment, end: Moment): Promise<Event[]> {
+  public async getEvents(ctx: opal.Context,
+                         start: Moment,
+                         end: Moment): Promise<Event[]> {
     let events = await this.getEventsImpl(start, end);
-    events.concat(Array.from(opal.ctx.view(this.eventBuffer)));
+    events.concat(Array.from(ctx.view(this.eventBuffer)));
     return events;
   }
 
-  public async scheduleEvent(event: Event): Promise<boolean>{
-    opal.ctx.add(this.eventBuffer, event);
+  public async scheduleEvent(ctx: opal.Context,
+                             event: Event): Promise<boolean>{
+    ctx.add(this.eventBuffer, event);
     return true;
   }
 
-  abstract getEventsImpl(start: Moment, end: Moment): Promise<Event[]>;
+  abstract getEventsImpl(start: Moment,
+                         end: Moment): Promise<Event[]>;
+
   abstract scheduleEventImpl(event: Event): Promise<boolean>;
 }

@@ -23,15 +23,13 @@ export class Calendar extends calbase.Calendar {
     throw new Error("Remote calendars don't separate implementation from remoting");
   }
 
-  public async getEvents(start: moment.Moment, end: moment.Moment) {
-    // opal-tranformer expects a variable named "ctx" in scope
-    let ctx = opal.ctx;
+  public async getEvents(ctx: opal.Context, start: moment.Moment, end: moment.Moment) {
     // opal-transformer expects a variable named "remote" in scope
     let remote = this.remote;
     out result;
     let world = hyp of {
       with remote {
-        result = await remote.getEvents(start, end);
+        result = await remote.getEvents(ctx, start, end);
       }
     }
     let events: calbase.Event[] = await ctx.get(result, world) as calbase.Event[];
@@ -42,15 +40,13 @@ export class Calendar extends calbase.Calendar {
     }));
   }
 
-  async scheduleEvent(event: calbase.Event): Promise<boolean> {
-    // opal-tranformer expects a variable named "ctx" in scope
-    let ctx = opal.ctx;
+  async scheduleEvent(ctx: opal.Context, event: calbase.Event): Promise<boolean> {
     // opal-transformer expects a variable named "remote" in scope
     let remote = this.remote;
     out result;
     let world = hyp of {
       with remote {
-        result = await remote.scheduleEvent(event);
+        result = await remote.scheduleEvent(ctx, event);
       }
     }
     return await ctx.commit(world)
@@ -80,7 +76,7 @@ export class RemoteCalendarNode extends opal.OpalNode {
   /**
    * Endpoint to actually get the events on a remote calendar.
    */
-  public async getEvents(start: moment.Moment, end: moment.Moment) {
+  public async getEvents(ctx: opal.Context, start: moment.Moment, end: moment.Moment) {
     // re-initialize moments since Opal de-classifies them (and passes only data)
     start = moment(start);
     end = moment(end);
@@ -88,10 +84,10 @@ export class RemoteCalendarNode extends opal.OpalNode {
       throw Error('Underlying not set!');
     }
 
-    return await this.underlying.getEvents(start, end);
+    return await this.underlying.getEvents(ctx, start, end);
   }
 
-  public async scheduleEvent(event: calbase.Event) : Promise<boolean> {
+  public async scheduleEvent(ctx: opal.Context, event: calbase.Event) : Promise<boolean> {
     // re-initialize moments since Opal de-classifies them (and passes only data)
     event.start = moment(event.start);
     event.end = moment(event.end);
@@ -100,7 +96,7 @@ export class RemoteCalendarNode extends opal.OpalNode {
       throw Error('Underlying not set!');
     }
 
-    return await this.underlying.scheduleEvent(event);
+    return await this.underlying.scheduleEvent(ctx, event);
   }
 
   public getId() {

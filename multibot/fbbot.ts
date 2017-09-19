@@ -5,6 +5,7 @@
 import * as basebot from './basebot';
 import Messenger = require('messenger-bot');
 import * as http from 'http';
+import * as opal from 'opal';
 
 /**
  * A thread of interaction with a specific Facebook user.
@@ -55,7 +56,7 @@ export class FacebookBot implements basebot.Bot {
    * Create a Messenger connection with a given page token and webhook verify
    * token.
    */
-  constructor(token: string, verify: string) {
+  constructor(ctx: opal.Context, token: string, verify: string) {
     this.msgr = new Messenger({
       token,
       verify,
@@ -63,6 +64,7 @@ export class FacebookBot implements basebot.Bot {
 
     this.msgr.on('message', (event) => {
       this.spool.fire(
+        ctx,
         this,
         event.sender.id,
         event.message,

@@ -7,6 +7,7 @@ import * as libweb from '../libweb';
 import * as http from 'http';
 import * as url from 'url';
 import * as util from 'util';
+import * as opal from 'opal';
 import SSE = require('sse-writer');
 
 /**
@@ -120,7 +121,7 @@ export class WebBot implements basebot.Bot {
   /**
    * The server routes for interacting with the bot.
    */
-  routes() {
+  routes(ctx: opal.Context) {
     return [
       // Front-end resources.
       new libweb.Route('/chat', libweb.file('web/chat.html')),
@@ -138,7 +139,7 @@ export class WebBot implements basebot.Bot {
           // TODO All web users are considered the same for now.
           let text = await libweb.body(req);
           this.spool.fire(
-            this, null, text, text,
+            ctx, this, null, text, text,
             () => new Conversation(this, "user"),
           );
 

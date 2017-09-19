@@ -53,8 +53,8 @@ interface Settings {
 /**
  * Get a quick text summary of things on a calendar.
  */
-async function getSomeEvents(cal: Calendar) {
-  let events = await cal.getEvents(moment(), moment().add(7, 'days'));
+async function getSomeEvents(ctx: opal.Context, cal: Calendar) {
+  let events = await cal.getEvents(ctx, moment(), moment().add(7, 'days'));
   let out = [];
   for (let event of events) {
     out.push(`${event.start.format()}: ${event.title}`);
@@ -172,8 +172,8 @@ export class OpalBot {
   /**
    * Connect the bot to a Slack team.
    */
-  connectSlack(token: string, statusChan: string) {
-    let slack = new SlackBot(token);
+  connectSlack(ctx: opal.Context, token: string, statusChan: string) {
+    let slack = new SlackBot(ctx, token);
 
     // Handle Slack connection.
     slack.on("ready", async () => {
@@ -193,18 +193,18 @@ export class OpalBot {
   /**
    * Run the bot in terminal (debugging) mode.
    */
-  runTerminal() {
+  runTerminal(ctx: opal.Context) {
     let term = new TerminalBot();
     this.register(term);
-    term.run();
+    term.run(ctx);
   }
 
   /**
    * Add a server component to interact with Facebook Messenger. You still
    * need to call `runWeb` to actually run the server.
    */
-  addFacebook(token: string, verify: string) {
-    let fb = new FacebookBot(token, verify);
+  addFacebook(ctx: opal.Context, token: string, verify: string) {
+    let fb = new FacebookBot(ctx, token, verify);
     this.register(fb);
     this.webRoutes.push(new libweb.Route('/fb', fb.handler()));
   }
@@ -213,10 +213,10 @@ export class OpalBot {
    * Add server component for directly interacting with the bot through
    * a Web interface.
    */
-  addWeb() {
+  addWeb(ctx: opal.Context) {
     let web = new WebBot();
     this.register(web);
-    this.webRoutes.push(...web.routes());
+    this.webRoutes.push(...web.routes(ctx));
   }
 
   /**
@@ -255,8 +255,8 @@ export class OpalBot {
    * Register this bot's callbacks with a connection.
    */
   register(bot: Bot) {
-    bot.onconverse = async (text, conv) => {
-      await this.interact(text, conv);
+    bot.onconverse = async (ctx, text, conv) => {
+      await this.interact(ctx, text, conv);
     };
   }
 
@@ -327,32 +327,32 @@ export class OpalBot {
   /**
    * Conversation with a greeting intent.
    */
-  async handle_greeting(conv: Conversation) {
+  async handle_greeting(ctx: opal.Context, conv: Conversation) {
     conv.send(`hi, ${conv.user}!`);
   }
 
   /**
    * Conversation where the user says goodbye.
    */
-  async handle_bye(conv: Conversation) {
+  async handle_bye(ctx: opal.Context, conv: Conversation) {
     conv.send(":wave: I'll be right here");
   }
 
   /**
    * Conversation where the user says thanks.
    */
-  async handle_thanks(conv: Conversation) {
+  async handle_thanks(ctx: opal.Context, conv: Conversation) {
     conv.send("nbd yo");
   }
 
   /**
    * Conversation where the user wants to see their calendar.
    */
-  async handle_show_calendar(conv: Conversation) {
+  async handle_show_calendar(ctx: opal.Context, conv: Conversation) {
     conv.send("let's get your calendar!");
     let calendar = await this.getCalendar(conv);
     if (calendar) {
-      conv.send(await getSomeEvents(calendar));
+      conv.send(await getSomeEvents(ctx, calendar));
     }
   }
 
@@ -386,7 +386,8 @@ export class OpalBot {
   /**
    * Conversation where the user wants to schedule a meeting.
    */
-  async handle_schedule_meeting(conv: Conversation,
+  async handle_schedule_meeting(ctx: opal.Context,
+                                conv: Conversation,
                                 datetime_ent: wit.Entity | null,
                                 slack_id_ent: wit.Entity | null,
                                 duration_ent: wit.Entity | null,
@@ -431,7 +432,7 @@ export class OpalBot {
     // set up the event to be scheduled
     conv.send(`Scheduling an ${duration} meeting at ${datetime} with ${target.slack_id}`);
     let start_time = moment(datetime);
-    let ctx = opal.ctx;
+
     let event: Event = {
       title: `Opal-Scheduled event with ${me.slack_id} and ${target.slack_id}`,
       start: start_time,
@@ -442,8 +443,8 @@ export class OpalBot {
     //  atomically, if the proposed time works for both people
     out succeeded;
     let world = hyp of {
-      let myScheduleSuccessP = myCalendar!.scheduleEvent(event);
-      let targetScheduleSuccessP = targetCalendar!.scheduleEvent(event);
+      let myScheduleSuccessP = myCalendar!.scheduleEvent(ctx, event);
+      let targetScheduleSuccessP = targetCalendar!.scheduleEvent(ctx, event);
       let promises = Promise.all([myScheduleSuccessP, targetScheduleSuccessP])
         .then(([m, t]) => {
           return m && t;
@@ -471,7 +472,7 @@ export class OpalBot {
   /**
    * Conversation where the user wants to set up their calendar settings.
    */
-  async handle_setup_calendar(conv: Conversation) {
+  async handle_setup_calendar(ctx: opal.Context, conv: Conversation) {
     await this.getCalendar(conv, true);
     conv.send("ok, all set!");
   }
@@ -479,7 +480,7 @@ export class OpalBot {
   /**
    * Conversation where the user wants to set up their calendar settings.
    */
-  async handle_who(conv: Conversation) {
+  async handle_who(ctx: opal.Context, conv: Conversation) {
     let users = this.users.mapReduce((item: User) => item.slack_id, (ids: string[]) => ids.join(', '));
     if (users.length == 0) {
       conv.send("No users set up!");
@@ -492,7 +493,7 @@ export class OpalBot {
   /**
    * Conversation where the user asks for help using the bot.
    */
-  async handle_help(conv: Conversation) {
+  async handle_help(ctx: opal.Context, conv: Conversation) {
     conv.send("I can schedule a meeting or show your calendar");
   }
 
@@ -504,14 +505,14 @@ export class OpalBot {
   /**
    * Called when a conversation has a missing or unrecognized intent.
    */
-  async handle_default(conv: Conversation) {
+  async handle_default(ctx: opal.Context, conv: Conversation) {
     conv.send(this.default_response);
   }
 
   /**
    * Handle a new conversation by dispatching based on intent.
    */
-  async interact(text: string, conv: Conversation) {
+  async interact(ctx: opal.Context, text: string, conv: Conversation) {
     if (text.trim() === '') {
       // if no message was sent, don't even try to parse it
       return;
@@ -525,28 +526,28 @@ export class OpalBot {
 
     let unhandled = false;
     if (wit.getEntity(res, "greetings")) {
-      await this.handle_greeting(conv);
+      await this.handle_greeting(ctx, conv);
     } else if (wit.getEntity(res, "bye")) {
-      await this.handle_bye(conv);
+      await this.handle_bye(ctx, conv);
     } else if (wit.getEntity(res, "thanks")) {
-      await this.handle_thanks(conv);
+      await this.handle_thanks(ctx, conv);
     } else {
       let intent = wit.entityValue(res, "intent");
       if (intent === "show_calendar") {
-        await this.handle_show_calendar(conv);
+        await this.handle_show_calendar(ctx, conv);
       } else if (intent === "schedule_meeting") {
         let datetime = wit.getEntity(res, "datetime");
         let contact = wit.getEntity(res, "contact");
         let duration = wit.getEntity(res, "duration");
-        await this.handle_schedule_meeting(conv, datetime, contact, duration);
+        await this.handle_schedule_meeting(ctx, conv, datetime, contact, duration);
       } else if (intent === "setup_calendar") {
-        await this.handle_setup_calendar(conv);
+        await this.handle_setup_calendar(ctx, conv);
       } else if (intent === "help") {
-        await this.handle_help(conv);
+        await this.handle_help(ctx, conv);
       } else if (intent === "who") {
-        await this.handle_who(conv);
+        await this.handle_who(ctx, conv);
       } else {
-        await this.handle_default(conv);
+        await this.handle_default(ctx, conv);
       }
     }
   }

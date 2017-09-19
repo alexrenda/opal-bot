@@ -4,6 +4,7 @@
 
 import * as basebot from './basebot';
 import * as readline from 'readline';
+import * as opal from 'opal';
 
 /**
  * A conversation that interacts with the user in the terminal.
@@ -39,7 +40,7 @@ export class TerminalBot implements basebot.Bot {
   /**
    * Wait for terminal input and dispatch it.
    */
-  run() {
+  run(ctx: opal.Context) {
     this.rl = readline.createInterface(process.stdin, process.stdout);
     this.rl.setPrompt('>>> ');
 
@@ -48,7 +49,7 @@ export class TerminalBot implements basebot.Bot {
     this.rl.on('line', async (line: string) => {
       let text = line.trim();
       let fired = await this.spool.fire(
-        this, null, text, text,
+        ctx, this, null, text, text,
         () => new Conversation(this, "user"),
       );
       if (!fired) {

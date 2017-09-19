@@ -72,7 +72,7 @@ async function main(ctx: opal.Context) {
   if (opts['slack']) {
     let slack_token = process.env['SLACK_BOT_TOKEN'];
     if (slack_token) {
-      bot.connectSlack(slack_token, STATUS_CHAN);
+      bot.connectSlack(ctx, slack_token, STATUS_CHAN);
     } else {
       console.error("missing SLACK_BOT_TOKEN");
     }
@@ -85,13 +85,13 @@ async function main(ctx: opal.Context) {
     if (!fb_page_token || !fb_verify_token) {
       console.error("missing FB_PAGE_TOKEN or FB_VERIFY_TOKEN");
     } else {
-      bot.addFacebook(fb_page_token, fb_verify_token);
+      bot.addFacebook(ctx, fb_page_token, fb_verify_token);
     }
   }
 
   // Web interface.
   if (opts['web']) {
-    bot.addWeb();
+    bot.addWeb(ctx);
   }
 
   // Start the web server.
@@ -99,7 +99,7 @@ async function main(ctx: opal.Context) {
 
   // Terminal.
   if (opts['term']) {
-    bot.runTerminal();
+    bot.runTerminal(ctx);
   }
 }
 

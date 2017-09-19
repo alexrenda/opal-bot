@@ -1,3 +1,5 @@
+import * as opal from 'opal';
+
 /**
  * Abstract interface for bot-like communication.
  */
@@ -34,7 +36,7 @@ export interface Conversation {
  * the continuing conversation.
  */
 export type ConversationHandler =
-  (message: string, conv: Conversation) => Promise<void>;
+  (ctx: opal.Context, message: string, conv: Conversation) => Promise<void>;
 
 /**
  * A bot connection dispatches to conversation handlers.
@@ -85,8 +87,8 @@ export class Spool<K, M> {
    * handler for new conversations. Return a flag indicating whether a
    * spooled callback was fired.
    */
-  async fire(bot: Bot, key: K, message: M, text: string,
-             mkconv: () => Conversation): Promise<boolean> {
+  async fire(ctx: opal.Context, bot: Bot, key: K, message: M,
+             text: string, mkconv: () => Conversation): Promise<boolean> {
     let cbk = this.dispatch(key, message);
     if (cbk) {
       // Existing conversation.
@@ -94,7 +96,7 @@ export class Spool<K, M> {
       return true;
     } else if (bot.onconverse) {
       // New conversation.
-      await bot.onconverse(text, mkconv());
+      await bot.onconverse(ctx, text, mkconv());
     }
     return false;
   }

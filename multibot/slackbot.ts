@@ -4,6 +4,7 @@
 
 const slack_client = require('@slack/client');
 import * as basebot from './basebot';
+import * as opal from 'opal';
 
 export interface User {
   id: string;
@@ -160,7 +161,7 @@ export class SlackBot implements basebot.Bot {
    * Construct a bot by creating a Slack RTM client object and attach this
    * bot's listeners.
    */
-  constructor(token: string) {
+  constructor(ctx: opal.Context, token: string) {
     this.rtm = new slack_client.RtmClient(token);
 
     // Event handler for successful connection.
@@ -183,6 +184,7 @@ export class SlackBot implements basebot.Bot {
     // Event handler for dispatching waited-on messages.
     this.on("message", (message: Message) => {
       this.spool.fire(
+        ctx,
         this,
         message.channel,
         message,
