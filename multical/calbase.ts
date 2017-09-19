@@ -49,12 +49,8 @@ export abstract class Calendar {
 
   resetBuffer() {
     this.eventBuffer = opal.topctx.collection(
-      (world: opal.World) => {
-        console.log(`Created eventBuffer in world:`);
-        console.log((new Error()).stack);
-        console.log(world.constructor.name);
-        return new EventCollection(world, this);
-      });
+      (world: opal.World) => new EventCollection(world, this)
+    );
   }
 
   public async getEvents(ctx: opal.Context,
