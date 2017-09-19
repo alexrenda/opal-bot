@@ -83,14 +83,17 @@ export class RemoteCalendarNode extends opal.OpalNode {
    * Endpoint to actually get the events on a remote calendar.
    */
   public async getEvents(ctx: opal.Context, start: moment.Moment, end: moment.Moment) {
+    console.log(`Getting events: ${ctx}, ${start}, ${end}`);
     // re-initialize moments since Opal de-classifies them (and passes only data)
     start = moment(start);
     end = moment(end);
     if (this.underlying === null) {
       throw Error('Underlying not set!');
     }
-
-    return await this.underlying.getEvents(ctx, start, end);
+    console.log(`Getting events`);
+    let events = await this.underlying.getEvents(ctx, start, end);
+    console.log(`Got events: ${events}`);
+    return events;
   }
 
   public async scheduleEvent(ctx: opal.Context, event: calbase.Event) : Promise<boolean> {
