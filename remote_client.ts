@@ -15,7 +15,7 @@ import * as opal from 'opal';
 import * as url from 'url';
 import * as util from './lib/util';
 
-async function main() {
+async function main(ctx: opal.Context) {
   let parser = new argparse.ArgumentParser({ description: 'Launch a remote calendar' });
   parser.addArgument(['hostname'], { help: 'Hostname to run on' });
   parser.addArgument(['port'], { type: 'int', help: 'Port to run on' });
@@ -197,7 +197,5 @@ async function createOffice(args: OfficeArgs) {
 }
 
 if (require.main === module) {
-  main().catch((e) => {
-    console.error(e);
-  });
+  opal.opal(main);
 }
