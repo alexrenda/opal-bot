@@ -31,7 +31,7 @@ export class Calendar extends calbase.Calendar {
       console.log(`Getting 1`);
       with remote {
         console.log(`Getting 2`);
-        result = await remote.getEvents(start, end);
+        result = await remote.getEvents(ctx, start, end);
         console.log(`Getting 3`);
       }
       console.log(`Getting 4`);
@@ -52,7 +52,7 @@ export class Calendar extends calbase.Calendar {
     out result;
     let world = hyp of {
       with remote {
-        result = await remote.scheduleEvent(event);
+        result = await remote.scheduleEvent(ctx, event);
       }
     }
     return await ctx.commit(world)
