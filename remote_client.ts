@@ -41,7 +41,7 @@ async function main(ctx: opal.Context) {
   let remoteNode = new remote.RemoteCalendarNode(args.hostname, args.port);
   remoteNode.setUnderlying(cal);
 
-  opal.opal(async (ctx: opal.Context) => { }, remoteNode);
+  await opal.launchNode(remoteNode);
 }
 
 /* Caldav calendar parsing and creation
