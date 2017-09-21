@@ -54,7 +54,7 @@ interface Settings {
  * Get a quick text summary of things on a calendar.
  */
 async function getSomeEvents(ctx: opal.Context, cal: Calendar) {
-  cal.getEvents(ctx, moment(), moment().add(7, 'days')).then(async (events) => {
+  return cal.getEvents(ctx, moment(), moment().add(7, 'days')).then(async (events) => {
     if (events.length === 0) {
       return "Looks like you don't have anything on your calendar!"
     }
