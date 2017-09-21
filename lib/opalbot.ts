@@ -54,12 +54,19 @@ interface Settings {
  * Get a quick text summary of things on a calendar.
  */
 async function getSomeEvents(ctx: opal.Context, cal: Calendar) {
-  let events = await cal.getEvents(ctx, moment(), moment().add(7, 'days'));
-  let out = [];
-  for (let event of events) {
-    out.push(`${event.start.format()}: ${event.title}`);
-  }
-  return out.join('\n');
+  cal.getEvents(ctx, moment(), moment().add(7, 'days')).then(async (events) => {
+    if (events.length === 0) {
+      return "Looks like you don't have anything on your calendar!"
+    }
+
+    let out = [];
+    for (let event of events) {
+      out.push(`${event.start.format()}: ${event.title}`);
+    }
+    return out.join('\n');
+  }, async () => {
+    return 'You should probably let me look at your calendar :)';
+  });
 }
 
 /**
@@ -352,12 +359,7 @@ export class OpalBot {
     conv.send("let's get your calendar!");
     let calendar = await this.getCalendar(conv);
     if (calendar) {
-      let res = await getSomeEvents(ctx, calendar);
-      if (res !== '') {
-        conv.send(res);
-      } else {
-        conv.send('Looks like you dont have anything in your calendar');
-      }
+      conv.send(await getSomeEvents(ctx, calendar));
     }
   }
 
