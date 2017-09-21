@@ -34,6 +34,9 @@ export class Calendar extends calbase.Calendar {
     }
     let events: calbase.Event[] = await ctx.get(result, world) as calbase.Event[];
 
+console.log('got some events:');
+console.log(events);
+
     // opal-distributed doesn't pass classes through, so we re-initialize moments
     return events.map((ev => {
       return { title: ev.title, start: moment(ev.start), end: moment(ev.end) };
@@ -83,8 +86,6 @@ export class RemoteCalendarNode extends opal.OpalNode {
     if (this.underlying === null) {
       throw Error('Underlying not set!');
     }
-    console.log('events:');
-    console.log(await this.underlying.getEvents(ctx, start, end));
     return await this.underlying.getEvents(ctx, start, end);
   }
 
