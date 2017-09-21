@@ -352,7 +352,12 @@ export class OpalBot {
     conv.send("let's get your calendar!");
     let calendar = await this.getCalendar(conv);
     if (calendar) {
-      conv.send(await getSomeEvents(ctx, calendar));
+      let res = await getSomeEvents(ctx, calendar);
+      if (res !== '') {
+        conv.send(res);
+      } else {
+        conv.send('Looks like you dont have anything in your calendar');
+      }
     }
   }
 
