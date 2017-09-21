@@ -29,7 +29,10 @@ export class Calendar extends calbase.Calendar {
     out result;
     let world = hyp of {
       with remote {
-        result = await remote.getEvents(ctx, start, end);
+        result = await remote.getEvents(ctx, start, end).catch((e) => {
+	console.log('err:');
+	console.log(e);
+	});
       }
     }
     let events: calbase.Event[] = await ctx.get(result, world) as calbase.Event[];
