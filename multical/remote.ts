@@ -29,10 +29,7 @@ export class Calendar extends calbase.Calendar {
     out result;
     let world = hyp of {
       with remote {
-        result = await remote.getEvents(ctx, start, end).catch((e) => {
-	console.log('err:');
-	console.log(e);
-	});
+        result = await remote.getEvents(ctx, start, end);
       }
     }
     let events: calbase.Event[] = await ctx.get(result, world) as calbase.Event[];
@@ -86,6 +83,8 @@ export class RemoteCalendarNode extends opal.OpalNode {
     if (this.underlying === null) {
       throw Error('Underlying not set!');
     }
+    console.log('events:');
+    console.log(await this.underlying.getEvents(ctx, start, end));
     return await this.underlying.getEvents(ctx, start, end);
   }
 
